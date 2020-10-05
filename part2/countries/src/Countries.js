@@ -1,5 +1,6 @@
 import React from 'react'
-import CountryInfo from './CountryInfo.js'
+import CountryItem from './CountryItem'
+import CountryInfo from './CountryInfo'
 
 const Countries = ({filter, countries}) =>{
 	const filterCountries = countries.filter(country => country.name.toLowerCase().includes(filter.toLowerCase()))
@@ -12,7 +13,9 @@ const Countries = ({filter, countries}) =>{
 	}
 	else if(filterCountries.length > 1 || filterCountries.length <= 10){
 		return(
-			filterCountries.map(country =>{ return(<p key={country.name}>{country.name}</p>)})
+			filterCountries.map(country =>{
+				return(<CountryItem key={country.name} country={country}/>)
+			})
 		)
 	}
 }
