@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import personService from './services/persons.js'
 import Filter from './Filter.js'
 import PersonForm from './PersonForm.js'
 import Numbers from './Numbers.js'
+import Notification from './Notification.js'
 
 const App = () => {
   const [ filter, setNewFilter ] = useState('')
   const [ persons, setPersons ] = useState([]) 
   const [ newName, setNewName ] = useState('')
   const [ newNumber, setNewNumber ] = useState('')
+  const [ notification, setNotification ] = useState(null)
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/persons")
-      .then(response => {
-        setPersons(response.data)
-      })
+    personService
+    .getAll()
+    .then(initialPersons => setPersons(initialPersons))
   }, [])
 
   const handleNameChange = (event) =>{
@@ -32,22 +32,57 @@ const App = () => {
 
   const addPerson = (event) => {
   	event.preventDefault()
-  	const newPerson = {name: newName, number: newNumber}
+  	let newPerson = {name: newName, number: newNumber}
     const names = persons.map(person => person.name)
     if(!names.includes(newPerson.name)){
-      setPersons(persons.concat(newPerson))
+      personService
+      .create(newPerson)
+      .then(newPerson =>{
+        setPersons(persons.concat(newPerson))
+        setNewName('')
+        setNewNumber('')
+      })
+
+      setNotification('Person added to phonebook')
+      setTimeout(() =>{setNotification(null)}, 3000)
     }
-  	else{ alert(newPerson.name + ' is already in the phonebook')}
+  	else{
+      if(window.confirm(`${newPerson.name} is in the phonebook. Update number?`)){
+        const id = persons.find(person => person.name === newPerson.name).id
+        personService
+        .updateObject(id, newPerson)
+        .then(() => {
+          setPersons(persons.map(person => person.name !== newPerson.name ? person : newPerson))
+          setNotification(`${newPerson.name}'s number has been updated`)
+          setTimeout(() =>{setNotification(null)}, 3000)
+        })
+        .catch(error =>{
+          setNotification(`${newPerson.name} is already deleted.`)
+          setTimeout(() =>{setNotification(null)}, 3000)
+        })
+
+        setNewName('')
+        setNewNumber('')
+      }
+    }
 
     setNewName('')
   }
 
+  const deleteButton = id =>{
+    if(window.confirm("Do you want to delete this person?")){
+      personService.deleteObject(id)
+      setPersons(persons.filter(person => person.id !== id))
+    }
+  }
+
   return (
     <div>
+      <Notification message={notification}/>
       <h2>Phonebook</h2>
       <Filter value={filter} handler={handleFilterChange}/>
       <PersonForm submitAction={addPerson} nameInput={newName} nameHandler={handleNameChange} numberInput={newNumber} numberHandler={handleNumberChange}/>
-      <Numbers filter={filter} persons={persons}/>
+      <Numbers filter={filter} persons={persons} deleteHandler={deleteButton}/>
     </div>
   )
 }
