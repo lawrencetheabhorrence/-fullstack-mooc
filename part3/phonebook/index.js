@@ -2,7 +2,10 @@ const express = require('express')
 const morgan = require('morgan')
 const app = express()
 
+morgan.token('body', function (req, res){return JSON.stringify(req.body)})
+
 app.use(express.json())
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 const generateId = () => Math.floor(Math.random() * 100000000000000)
 
@@ -72,8 +75,6 @@ app.delete('/api/persons/:id', (req, res) =>{
 app.post('/api/persons', (req, res) =>{
 	const body = req.body
 
-	const duplicate = persons.find(p => p.name = body.name)
-
 	const nullNameError = {
 		"error" : "no name entered"
 	}
@@ -86,20 +87,24 @@ app.post('/api/persons', (req, res) =>{
 		res.json(nullNameError).status(204)
 	}
 
-	else if(duplicate){
-		res.json(notUniqueNameError).status(204)
-	}
-
 	else{
-		const person = {
-			"name" : body.name,
-			"number" : body.number,
-			"id": generateId()
+		const duplicate = persons.find(p => p.name === body.name)
+
+		if(duplicate){
+			res.json(notUniqueNameError).status(204)
 		}
-	
-		persons = persons.concat(person)
-	
-		res.json(persons)
+
+		else{
+			const person = {
+				"name" : body.name,
+				"number" : body.number,
+				"id": generateId()
+			}
+		
+			persons = persons.concat(person)
+		
+			res.json(persons)
+		}
 	}
 })
 
