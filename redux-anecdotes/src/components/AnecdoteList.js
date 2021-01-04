@@ -1,13 +1,13 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { newNotif, resetNotif } from '../reducers/notifReducer'
+import { setNotification } from '../reducers/notifReducer'
+import { voteAnecdote } from '../reducers/anecdoteReducer'
 
 const Anecdote = ({id, content, votes}) => {
   const dispatch = useDispatch()
   const vote = (id, content) => {
-    dispatch({ type: 'VOTE', data: { id } })
-    dispatch(newNotif(content))
-    setTimeout(() => dispatch(resetNotif()),  5000)
+    dispatch(voteAnecdote(id))
+    dispatch(setNotification(content, 10000))
   }
 
   return (

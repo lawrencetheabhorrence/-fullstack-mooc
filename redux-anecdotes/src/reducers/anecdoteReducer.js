@@ -1,11 +1,33 @@
 /* eslint-disable no-case-declarations */
+import anecdoteService from '../services/anecdotes'
 
-export const initAnecdotes = (data) => {
-  return { type: 'INIT_ANECDOTES', data }
+export const initAnecdotes = () => {
+  return async dispatch => {
+    const anecdotes = await anecdoteService.getAll()
+    dispatch({
+      type: 'INIT_ANECDOTES',
+      data: anecdotes
+    })
+  }
 }
 
-export const createAnecdote = (data) => {
-  return { type: 'NEW_ANECDOTE', data }
+export const createAnecdote = (content) => {
+  return async dispatch => {
+    const data = await anecdoteService.createNew(content)
+    dispatch({
+      type: 'NEW_ANECDOTE', data
+    })
+  }
+}
+
+export const voteAnecdote = (id) => {
+  return async dispatch => {
+    const anecdoteToVote = await anecdoteService.getAnecdote(id)
+    const data = await anecdoteService.modifyAnecdote(id, {...anecdoteToVote, votes: anecdoteToVote.votes + 1})
+    dispatch({
+      type: 'VOTE', data: { id }
+    })
+  }
 }
 
 const anecdoteReducer = (state = [], action) => {

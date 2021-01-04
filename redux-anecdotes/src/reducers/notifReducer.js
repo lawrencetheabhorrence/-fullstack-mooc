@@ -2,13 +2,12 @@
 
 const initialState = ''
 
-export const newNotif = (content) => ({
-  type: 'NOTIFY', data: `you voted '${content}'`
-})
-
-export const resetNotif = () => ({
-  type: 'RESET'
-})
+export const setNotification = (content, timer) => {
+  return async dispatch  => {
+    dispatch({ type: 'NOTIFY', data: `you voted '${content}'`})
+    setTimeout(() => dispatch({ type: 'RESET' }),  timer)
+  }
+}
 
 const notifReducer = (state = initialState, action) => {
   switch(action.type){
